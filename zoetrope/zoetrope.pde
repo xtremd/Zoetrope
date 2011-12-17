@@ -1,10 +1,10 @@
 #include "config.h" //Configuration file. All user changable settings are stored here.
 #include <TimerOne.h> //You will need the timer1 library found here: http://www.arduino.cc/playground/Code/Timer1
 
+//****INTERNAL VARS DO NOT TOUCH!*****
 uint16_t StepsToFlash; 
 
 boolean ledHold = true; //When the machine is starting up, hold the leds on until the table is up to speed
-
 
 // Our target and current speeds, written in step periods.
 // We actually care about it in terms of RPM, but our event loop is
@@ -18,6 +18,14 @@ long acceleration_us = 20;
 
 float stepsPerFrame;
 
+// Overflow counter for the LED flasher
+float overflow_count = 0;
+
+float activeStepCount = 0;
+
+uint8_t stepDevider = 1; //This is a phase tracker. It tracks the current phase number for the H-Bridge Stepper
+
+
 // Function to convert a target RPM into ms delay between steps.
 //  1      1 minute     60*10^6 us     60*10^6 ms   1 rotation     60*10^6 ms
 // --- => ----------- * ---------- => ----------- * ---------- => -----------
@@ -28,6 +36,7 @@ long convertRPMToUS(float RPM) {
 
 
 void setup() {
+    
     Serial.begin(9600);
     
     // Start at a low RPM, so that the motor can supply enough torque to get the wheel spinning.
@@ -53,90 +62,18 @@ void loop() {
     delay(5);
 }
 
-// Overflow counter for the LED flasher
-float overflow_count = 0;
-
-float ActiveStepCount = 0;
-
-// Step divider to get more even timing on the 
-uint8_t step_divider = 0;
-uint8_t stepDevider = 1;
-
 void stepCallback() {
-    
-    //Step the H-Bridge
-    switch (stepDevider) {
-        /*case 1: //Phase 1
-         // 1010
-         digitalWrite(_pin1, HIGH);
-         digitalWrite(_pin2, LOW);
-         digitalWrite(_pin3, HIGH);
-         digitalWrite(_pin4, LOW);
-         break; 
-         
-         case 2: //Phase 2
-         // 0110
-         digitalWrite(_pin1, LOW);
-         digitalWrite(_pin2, HIGH);
-         digitalWrite(_pin3, HIGH);
-         digitalWrite(_pin4, LOW);
-         break;
-         
-         case 3: //Phase 3
-         //0101
-         digitalWrite(_pin1, LOW);
-         digitalWrite(_pin2, HIGH);
-         digitalWrite(_pin3, LOW);
-         digitalWrite(_pin4, HIGH);
-         break;
-         
-         case 4: //Phase 4
-         //1001
-         digitalWrite(_pin1, HIGH);
-         digitalWrite(_pin2, LOW);
-         digitalWrite(_pin3, LOW);
-         digitalWrite(_pin4, HIGH);
-         break;*/
-        //USE THIS CODE. IT ONLY ENERGIZES ONE COIL AT A TIME! SAVE THE H-BRIDGES!
-        case 1:    // 1000
-        digitalWrite(_pin1, HIGH);
-        digitalWrite(_pin2, LOW);
-        digitalWrite(_pin3, LOW);
-        digitalWrite(_pin4, LOW);
-        break;
-        
-        case 2:    // 0010
-        digitalWrite(_pin1, LOW);
-        digitalWrite(_pin2, LOW);
-        digitalWrite(_pin3, HIGH);
-        digitalWrite(_pin4, LOW);
-        break;
-        
-        case 3:    //0100
-        digitalWrite(_pin1, LOW);
-        digitalWrite(_pin2, HIGH);
-        digitalWrite(_pin3, LOW);
-        digitalWrite(_pin4, LOW);
-        break;
-        
-        case 4:    //0001
-        digitalWrite(_pin1, LOW);
-        digitalWrite(_pin2, LOW);
-        digitalWrite(_pin3, LOW);
-        digitalWrite(_pin4, HIGH);
-        break;
-        
-        
-    }
-    if (stepDevider >= 4) {
-        stepDevider = 0;
-    } else {
-        stepDevider++; 
-    }
+    #if STEPPER_CARD == 1
+    //Do card step
+    doCardSteps();
+    #else
+    //Do hbridge step
+    doHBridgeStep();
+    #endif
     
     
     if (overflow_count > stepsPerFrame && ledHold==false) { //Frame start!
-        ActiveStepCount = 0; //reset the frame flash counter
+        activeStepCount = 0; //reset the frame flash counter
         digitalWrite(STROBE_PIN,HIGH); //flash!
         
         overflow_count = 0; //reset frame counter
@@ -144,7 +81,7 @@ void stepCallback() {
     } 
     else if (ledHold == false) { //The frame has not just started, check if the flash has ended as long as we are not holding the LEDS
         
-        if (ActiveStepCount < StepsToFlash) { //if the flash still has not ended
+        if (activeStepCount < StepsToFlash) { //if the flash still has not ended
             digitalWrite(STROBE_PIN,HIGH); //keep it up!
         } 
         else { //Else, turn off the flash
@@ -152,7 +89,7 @@ void stepCallback() {
         } 
     }
     overflow_count++;
-    ActiveStepCount++;
+    activeStepCount++;
 }
 
 void setupOutputPins() {
@@ -192,7 +129,7 @@ void setupInitialPinStates() {
     digitalWrite(_pin2, LOW);
     digitalWrite(_pin3, LOW);
     digitalWrite(_pin4, LOW);
-    
+    #endif
     
 }
 
@@ -223,6 +160,100 @@ void recalculateSpeed() {
     }
     Timer1.setPeriod(current_delay_us);
     
+}
+#if STEPPER_CARD == 1
 
+void doCardSteps() {
+    //Step the steppercard 1 step
+    digitalWrite(STEP_PIN, HIGH);
+    digitalWrite(STEP_PIN, LOW);
+    
 }
 
+#else
+
+void doHBridgeStep() {
+    //Step the H-Bridge
+    switch (stepDevider) {
+        
+        #if HIGH_TORQUE == 1
+        
+        //High torque step tables for HBridge
+        //WARNING: This might overheat the HBridge and is not recommended!
+        //Use the low torque table instead
+        //EX: #define HIGH_TORQUE  0 (in config.h file)
+        
+        case 1: //Phase 1
+         // 1010
+         digitalWrite(_pin1, HIGH);
+         digitalWrite(_pin2, LOW);
+         digitalWrite(_pin3, HIGH);
+         digitalWrite(_pin4, LOW);
+         break; 
+         
+         case 2: //Phase 2
+         // 0110
+         digitalWrite(_pin1, LOW);
+         digitalWrite(_pin2, HIGH);
+         digitalWrite(_pin3, HIGH);
+         digitalWrite(_pin4, LOW);
+         break;
+         
+         case 3: //Phase 3
+         //0101
+         digitalWrite(_pin1, LOW);
+         digitalWrite(_pin2, HIGH);
+         digitalWrite(_pin3, LOW);
+         digitalWrite(_pin4, HIGH);
+         break;
+         
+         case 4: //Phase 4
+         //1001
+         digitalWrite(_pin1, HIGH);
+         digitalWrite(_pin2, LOW);
+         digitalWrite(_pin3, LOW);
+         digitalWrite(_pin4, HIGH);
+         break;
+        
+        #else
+        
+        //Low torque step tables
+        case 1:    // 1000
+        digitalWrite(_pin1, HIGH);
+        digitalWrite(_pin2, LOW);
+        digitalWrite(_pin3, LOW);
+        digitalWrite(_pin4, LOW);
+        break;
+        
+        case 2:    // 0010
+        digitalWrite(_pin1, LOW);
+        digitalWrite(_pin2, LOW);
+        digitalWrite(_pin3, HIGH);
+        digitalWrite(_pin4, LOW);
+        break;
+        
+        case 3:    //0100
+        digitalWrite(_pin1, LOW);
+        digitalWrite(_pin2, HIGH);
+        digitalWrite(_pin3, LOW);
+        digitalWrite(_pin4, LOW);
+        break;
+        
+        case 4:    //0001
+        digitalWrite(_pin1, LOW);
+        digitalWrite(_pin2, LOW);
+        digitalWrite(_pin3, LOW);
+        digitalWrite(_pin4, HIGH);
+        break;
+        
+        #endif
+        
+    }
+    if (stepDevider >= 4) {
+        stepDevider = 0;
+    } else {
+        stepDevider++; 
+    }
+
+}
+#endif

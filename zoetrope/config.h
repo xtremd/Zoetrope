@@ -1,15 +1,18 @@
+#include <stdint.h>
+
 ///////////***************CONFIGURATION FILE. ENTER ALL SETTINGS BELOW**************\\\\\\\\\\\\\\\\
 
-#define STEPPER_CARD 0 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
+
+#define STEPPER_CARD 1 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
 
 //Do we want to heat up our H-Bridge a bit and use a high torque stepper pulse
-#define HIGH_TORQUE 0 
+#define HIGH_TORQUE 1
 
 // ****
 // *The number of stepper motor steps per wheel rotation
 // *Typical steppers have 200 steps per rotation
 // ****
-const uint16_t stepperStepsPerRotation = 200;
+const uint16_t stepsPerRotation = 200;
 
 
 // ****
@@ -21,7 +24,6 @@ const uint16_t microsteppingDevider = 1;
 // ****
 // *IO pin definitions
 // ****
-
 #if STEPPER_CARD == 1
 //Steppercard pins
 const uint8_t STEP_PIN = 9;
