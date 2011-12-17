@@ -1,0 +1,74 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXFileReference section */
+		F5D3CA6D149CF73800BB0D26 /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../config.h; sourceTree = "<group>"; };
+		F5D3CA6E149CF73800BB0D26 /* zoetrope.pde */ = {isa = PBXFileReference; lastKnownFileType = text; name = zoetrope.pde; path = ../zoetrope.pde; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.simpleColoring; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		F5D3CA64149CF71900BB0D26 = {
+			isa = PBXGroup;
+			children = (
+				F5D3CA6D149CF73800BB0D26 /* config.h */,
+				F5D3CA6E149CF73800BB0D26 /* zoetrope.pde */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		F5D3CA66149CF71900BB0D26 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				ORGANIZATIONNAME = "MakerBot Industries";
+			};
+			buildConfigurationList = F5D3CA69149CF71900BB0D26 /* Build configuration list for PBXProject "Zoetrope" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = F5D3CA64149CF71900BB0D26;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		F5D3CA6B149CF71900BB0D26 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		F5D3CA6C149CF71900BB0D26 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F5D3CA69149CF71900BB0D26 /* Build configuration list for PBXProject "Zoetrope" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F5D3CA6B149CF71900BB0D26 /* Debug */,
+				F5D3CA6C149CF71900BB0D26 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F5D3CA66149CF71900BB0D26 /* Project object */;
+}
