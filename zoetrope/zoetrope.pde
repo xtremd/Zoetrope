@@ -14,8 +14,9 @@ long current_delay_us = 0;
 
 // Acceleration: our motor isn't powerful enough to do a cold start, so we ramp it up slowly.
 // This variable controls the amount of change per second during the acceleration process.
-long acceleration_us = 20;
+uint8_t acceleration_us = 20;
 
+// How many steps per frame. FIX THIS! SHOULD NOT BE FLOAT!
 float stepsPerFrame;
 
 // Overflow counter for the LED flasher
@@ -118,9 +119,7 @@ void setupInitialPinStates() {
     //Stepper card pins
     //When the arduino turns on, turn on the lights until the machine is up to speed
     digitalWrite(STROBE_PIN, LOW); 
-    pinMode(ENABLE_PIN,OUTPUT);
     digitalWrite(ENABLE_PIN,LOW);
-    pinMode(DIR_PIN,OUTPUT);
     digitalWrite(DIR_PIN,LOW);
     #else
     //H-Bridge pins
@@ -256,4 +255,4 @@ void doHBridgeStep() {
     }
 
 }
-#endif
+#endif //End of steppercard/HBridge preprocessor switch.

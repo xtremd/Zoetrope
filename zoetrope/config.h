@@ -1,12 +1,14 @@
-#include <stdint.h>
-
 ///////////***************CONFIGURATION FILE. ENTER ALL SETTINGS BELOW**************\\\\\\\\\\\\\\\\
 
+#ifndef CONFIG_H //Header guard
+#define CONFIG_H
 
-#define STEPPER_CARD 1 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
+#include <stdint.h>
 
-//Do we want to heat up our H-Bridge a bit and use a high torque stepper pulse
-#define HIGH_TORQUE 1
+#define STEPPER_CARD 0 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
+
+//Do we want to heat up our H-Bridge a bit and use a high torque stepper pulse? Low torque is recommended.
+#define HIGH_TORQUE 0
 
 // ****
 // *The number of stepper motor steps per wheel rotation
@@ -58,3 +60,5 @@ const uint8_t targetRPM = 80;
 // * Defines what fraction of the frame should the LED be on for (Default 30 or 1/30 the time of the whole frame)
 // ****
 uint16_t frameDevider = 30; //Change this to make the leds flash for a shorter devision of the frame
+
+#endif
