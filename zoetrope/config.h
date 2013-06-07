@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-#define STEPPER_CARD 0 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
+#define STEPPER_CARD 1 //Are we using a external steppercard or A H-Bridge? 0=H-Bridge, 1=steppercard.
 
 //Do we want to heat up our H-Bridge a bit and use a high torque stepper pulse? Low torque is recommended.
 #define HIGH_TORQUE 0
@@ -21,7 +21,7 @@ const uint16_t stepsPerRotation = 200;
 // *Microstepping Devider, set to the denominator of your stepping setup fraction
 // *I.E. 1 for whole stepping, 2 for half stepping, 4 for quarter stepping Etc, Etc....
 // ****
-const uint16_t microsteppingDevider = 1;
+const uint16_t microsteppingDevider = 16;
 
 // ****
 // *IO pin definitions
