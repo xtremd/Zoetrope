@@ -16,12 +16,14 @@ long current_delay_us = 0;
 // This variable controls the amount of change per second during the acceleration process.
 uint8_t acceleration_us = 20;
 
-// How many steps per frame. FIX THIS! SHOULD NOT BE FLOAT!
-float stepsPerFrame;
+// Keeps track of the stepper's current position (i.e. how many steps it has made into the rotation)
+// Note: to avoid overflow, this resets back to zero on every full rotation (i.e. when the var's value reaches (stepsPerRotation*microsteppingDevider) ) 
+uint16_t current_Position = 0;
 
-// Overflow counter for the LED flasher
-float overflow_count = 0;
+// Keeps track of which frame number we are going to be triggering next.
+uint8_t current_Frame_Index = 0;
 
+// Used to keep track of the LED's current HIGH time.
 float activeStepCount = 0;
 
 uint8_t stepDevider = 1; //This is a phase tracker. It tracks the current phase number for the H-Bridge Stepper
@@ -48,8 +50,11 @@ void setup() {
     
     Serial.println(target_delay_us);
     
-    stepsPerFrame = (float)stepsPerRotation/frameCount; //Calculate steps per frame
+	// Calculate steps per frame. Is only a local var.
+    float stepsPerFrame;
+	stepsPerFrame = ((float)stepsPerRotation/frameCount);
     
+	// Calculate how long the LED has to be on.
     StepsToFlash = stepsPerFrame/frameDevider;
 	
 	// Setup the pin states. (Input, Output, etc)
@@ -58,6 +63,7 @@ void setup() {
 	// Set pins high/low etc.
     setupInitialPinStates();
     
+	// Start controlling the motor via timer interrupts
     startTimer(current_delay_us);
     }
 
@@ -76,25 +82,64 @@ void stepCallback() {
     doHBridgeStep();
     #endif
     
+	if (ledHold ==false){
+	
+		// The next frame will start at this position
+		uint16_t next_Frame_Start = FrameStart(current_Frame_Index);
     
-    if (overflow_count > stepsPerFrame && ledHold==false) { //Frame start!
-        activeStepCount = 0; //reset the frame flash counter
-        digitalWrite(STROBE_PIN,HIGH); //flash!
+	    if (current_Position == next_Frame_Start) { //Frame start!
+	        activeStepCount = 0; //reset the frame flash counter
+			incrementFrameIndex(); // Increment the frame count
+	        digitalWrite(STROBE_PIN,HIGH); //flash!
         
-        overflow_count = 0; //reset frame counter
+	    } 
+		//The frame has not just started, check if the flash has ended as long as we are not holding the LEDS
+	    else {
         
-    } 
-    else if (ledHold == false) { //The frame has not just started, check if the flash has ended as long as we are not holding the LEDS
-        
-        if (activeStepCount < StepsToFlash) { //if the flash still has not ended
-            digitalWrite(STROBE_PIN,HIGH); //keep it up!
-        } 
-        else { //Else, turn off the flash
-            digitalWrite(STROBE_PIN,LOW); 
-        } 
-    }
-    overflow_count++;
-    activeStepCount++;
+	        if (activeStepCount < StepsToFlash) { //if the flash still has not ended
+	            digitalWrite(STROBE_PIN,HIGH); //keep it up!
+	        } 
+	        else { //Else, turn off the flash
+	            digitalWrite(STROBE_PIN,LOW); 
+	        } 
+	    }
+		activeStepCount++;
+	}
+	
+    incrementCurrentPosition;
+}
+
+// Increments the frame index and prevents overflow
+void incrementFrameIndex(){
+	//Increment
+	current_Frame_Index++;
+	// Check overflow
+	if (current_Frame_Index == frameCount) {
+		current_Frame_Index = 0;
+	} 
+}
+
+void incrementCurrentPosition(){
+	//Increment
+	current_Position++;
+	// Check overflow
+	if (current_Position == stepsPerRotation * microsteppingDevider) {
+		current_Frame_Index = 0;
+	} 
+}
+
+// Returns the absolute position of when the start of the frame number inputted is.
+uint16_t FrameStart(uint8_t frameNumber) {
+	// Make our variables
+	float unroundedPosition;
+	uint16_t startPosition;
+	
+	// Do calculations
+	unroundedPosition = (stepsPerRotation * microsteppingDevider * frameNumber) / frameCount;
+	// Do rounding
+	
+	startPosition = floor(unroundedPosition+0.5);
+	return startPosition;
 }
 
 void setupOutputPins() {
