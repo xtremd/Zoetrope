@@ -51,7 +51,11 @@ void setup() {
     stepsPerFrame = (float)stepsPerRotation/frameCount; //Calculate steps per frame
     
     StepsToFlash = stepsPerFrame/frameDevider;
+	
+	// Setup the pin states. (Input, Output, etc)
+	setupOutputPins();
     
+	// Set pins high/low etc.
     setupInitialPinStates();
     
     startTimer(current_delay_us);
@@ -114,6 +118,7 @@ void setupOutputPins() {
 }
 
 void setupInitialPinStates() {
+	
     
     #if STEPPER_CARD == 1
     //Stepper card pins
