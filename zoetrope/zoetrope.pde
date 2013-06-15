@@ -1,4 +1,4 @@
-#include "config.h" //Configuration file. All user changable settings are stored here.
+#include "zoetrope.h" //Configuration file. All user changable settings are stored here.
 #include <TimerOne.h> //You will need the timer1 library found here: http://www.arduino.cc/playground/Code/Timer1
 
 //****INTERNAL VARS DO NOT TOUCH!*****
@@ -85,7 +85,7 @@ void stepCallback() {
 #endif
 
   // The next frame will start at this position
-  uint16_t next_Frame_Start = FrameStart(current_Frame_Index);
+  uint16_t next_Frame_Start = frameStart(current_Frame_Index);
 
   if (current_Position == next_Frame_Start) { //Frame start!
     activeStepCount = 0; //reset the frame flash counter
@@ -105,11 +105,11 @@ void stepCallback() {
   }
   activeStepCount++;
 
-  incrementCurrentPosition;
+  incrementCurrentPosition();
 }
 
 // Flashes LED while also honoring the LED spinup hold.
-void flashLED(uint8_t pinstate = 1) {
+void flashLED(uint8_t pinstate) {
   if (ledHold == false) {
     digitalWrite(STROBE_PIN, pinstate);
   } 
@@ -138,16 +138,21 @@ void incrementCurrentPosition(){
 }
 
 // Returns the absolute position of when the start of the frame number inputted is.
-uint16_t FrameStart(uint8_t frameNumber) {
+uint16_t frameStart(uint8_t frameNumber) {
   // Make our variables
   float unroundedPosition;
   uint16_t startPosition;
 
   // Do calculations
-  unroundedPosition = (steps_Per_Rotation * microsteppingDevider * frameNumber) / frameCount;
+  unroundedPosition = (steps_Per_Rotation * frameNumber) / frameCount;
+  
   // Do rounding
-
   startPosition = floor(unroundedPosition+0.5);
+  
+  // Check for overflow. If the start of the frame is marginally more than the max length of a full rotation, snap the position to zero.
+  if (startPosition >= steps_Per_Rotation ) {
+	  startPosition = 0;
+  }
   return startPosition;
 }
 
