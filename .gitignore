@@ -1,2 +1,5 @@
 ##IGNORE THESE
 .DS_Store
+*.zip
+*.7z
+*.tar
