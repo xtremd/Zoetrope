@@ -14,7 +14,7 @@
 // *The number of stepper motor steps per wheel rotation
 // *Typical steppers have 200 steps per rotation
 // ****
-const uint16_t stepsPerRotation = 200;
+const uint16_t motorStepsPerRotation = 200;
 
 
 // ****
