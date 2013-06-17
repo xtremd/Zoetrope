@@ -21,7 +21,7 @@ const uint16_t motorStepsPerRotation = 200;
 // *Microstepping Devider, set to the denominator of your stepping setup fraction
 // *I.E. 1 for whole stepping, 2 for half stepping, 4 for quarter stepping Etc, Etc....
 // ****
-const uint16_t microsteppingDevider = 16;
+const uint16_t microsteppingDevider = 1;
 
 // ****
 // *IO pin definitions
