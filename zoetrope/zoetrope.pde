@@ -24,25 +24,24 @@ uint16_t current_Position = 0;
 uint8_t current_Frame_Index = 0;
 
 // Used to keep track of the LED's current HIGH time.
-float activeStepCount = 0;
+uint16_t activeStepCount = 0;
 
 uint8_t stepDevider = 1; //This is a phase tracker. It tracks the current phase number for the H-Bridge Stepper
 
 uint16_t steps_Per_Rotation = motorStepsPerRotation * microsteppingDevider;
 
+// DEBUG FUNCTION VARIABLES
 
-// Function to convert a target RPM into ms delay between steps.
-//  1      1 minute     60*10^6 us     60*10^6 ms   1 rotation     60*10^6 ms
-// --- => ----------- * ---------- => ----------- * ---------- => -----------
-// RPM    x rotations    1 minute     x rotations    y steps      x * y steps
-long convertRPMToUS(float RPM) {
-  return 60000000L / (RPM * steps_Per_Rotation);
-}
+boolean DEBUG_On = true;
+
+unsigned long millis_Of_Last_Debug = 0;
+
+unsigned long millis_Debug_Delay = 5000;
 
 
 void setup() {
-
-  Serial.begin(9600);
+	
+	Serial.begin(9600);
 
   // Start at a low RPM, so that the motor can supply enough torque to get the wheel spinning.
   current_delay_us = convertRPMToUS(5);
@@ -57,13 +56,16 @@ void setup() {
   stepsPerFrame = ((float)steps_Per_Rotation/frameCount);
 
   // Calculate how long the LED has to be on.
-  StepsToFlash = stepsPerFrame/frameDevider;
+  StepsToFlash = floor( (stepsPerFrame/frameDevider) + 0.5 );
 
   // Setup the pin states. (Input, Output, etc)
   setupOutputPins();
 
   // Set pins high/low etc.
   setupInitialPinStates();
+  
+  // Print debugging information
+  printDEBUG();
 
   // Start controlling the motor via timer interrupts
   startTimer(current_delay_us);
@@ -71,6 +73,7 @@ void setup() {
 
 void loop() {
   recalculateSpeed();
+  printDEBUG();
   // Wait a second!
   delay(5);
 }
@@ -322,3 +325,59 @@ void doHBridgeStep() {
 }
 #endif //End of steppercard/HBridge preprocessor switch.
 
+// Function to convert a target RPM into ms delay between steps.
+//  1      1 minute     60*10^6 us     60*10^6 ms   1 rotation     60*10^6 ms
+// --- => ----------- * ---------- => ----------- * ---------- => -----------
+// RPM    x rotations    1 minute     x rotations    y steps      x * y steps
+long convertRPMToUS(float RPM) {
+  return 60000000L / (RPM * steps_Per_Rotation);
+}
+
+// Manually prints all the values of all the global variables
+void printDEBUG() {
+	
+	// Check if Debug mode is enabled.
+		if (DEBUG_On == true) {
+	
+			unsigned long current_Millis = millis();
+	
+			// If the current time is longer than the debug delay, trigger the debug function
+			if (current_Millis >= (millis_Of_Last_Debug + millis_Debug_Delay) ) {
+		
+				// Set millis_Of_Last_Debug to current time
+				millis_Of_Last_Debug = current_Millis;
+	
+				Serial.print("StepsToFlash: ");
+				Serial.println(StepsToFlash); 
+	
+				Serial.print("Led Hold: ");
+				Serial.println(ledHold);
+	
+				Serial.print("Target Delay: ");
+				Serial.println(target_delay_us);
+	
+				Serial.print("Current Delay: ");
+				Serial.println(current_delay_us);
+
+				Serial.print("Acceleration timing: ");
+				Serial.println(acceleration_us);
+
+				Serial.print("Current Pos: ");
+				Serial.println(current_Position);
+	
+				Serial.print("current_Frame_Index: ");
+				Serial.println(current_Frame_Index);
+	
+				Serial.print("activeStepCount: ");
+				Serial.println(activeStepCount);
+	
+				Serial.print("stepDevider: ");
+				Serial.println(stepDevider);
+	
+				Serial.print("steps_Per_Rotation: ");
+				Serial.println(steps_Per_Rotation);
+	
+		}
+	}
+	
+}

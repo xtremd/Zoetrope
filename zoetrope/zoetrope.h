@@ -42,5 +42,7 @@ void doHBridgeStep();
 
 #endif //End of steppercard/HBridge preprocessor switch.
 
+void printDEBUG();
+
 
 #endif
