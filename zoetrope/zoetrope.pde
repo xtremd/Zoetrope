@@ -93,12 +93,12 @@ void stepCallback() {
 
     if (activeStepCount < StepsToFlash) { //if the flash still has not ended
       flashLED(1); //keep it up!
+	   activeStepCount++;
     } 
     else { // If the flash has ended, turn off the flash
       flashLED(0); 
     } 
   }
-  activeStepCount++;
 
   incrementCurrentPosition();
   
@@ -138,7 +138,7 @@ void incrementCurrentPosition(){
   current_Position++;
   // Check overflow
   if (current_Position == steps_Per_Rotation) {
-    current_Frame_Index = 0;
+    current_Position = 0;
   } 
 }
 
