@@ -79,14 +79,6 @@ void loop() {
 }
 
 void stepCallback() {
-#if STEPPER_CARD == 1
-  //Do card step
-  doCardSteps();
-#else
-  //Do hbridge step
-  doHBridgeStep();
-#endif
-
   // The next frame will start at this position
   uint16_t next_Frame_Start = frameStart(current_Frame_Index);
 
@@ -109,6 +101,16 @@ void stepCallback() {
   activeStepCount++;
 
   incrementCurrentPosition();
+  
+  // Do the actual stepping of the stepper motor.
+#if STEPPER_CARD == 1
+  //Do card step
+  doCardSteps();
+#else
+  //Do hbridge step
+  doHBridgeStep();
+#endif
+  
 }
 
 // Flashes LED while also honoring the LED spinup hold.
@@ -367,6 +369,9 @@ void printDEBUG() {
 	
 				Serial.print("current_Frame_Index: ");
 				Serial.println(current_Frame_Index);
+				
+				Serial.print("Next Frame Start: ");
+				Serial.println(frameStart(current_Frame_Index));
 	
 				Serial.print("activeStepCount: ");
 				Serial.println(activeStepCount);
@@ -376,6 +381,8 @@ void printDEBUG() {
 	
 				Serial.print("steps_Per_Rotation: ");
 				Serial.println(steps_Per_Rotation);
+				
+				Serial.println();
 	
 		}
 	}
