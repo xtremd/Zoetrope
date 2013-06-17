@@ -55,10 +55,23 @@ const uint8_t frameCount = 15;
 // ****
 const uint8_t targetRPM = 80;
 
-// ****
-// * Frame devider
-// * Defines what fraction of the frame should the LED be on for (Default 30 or 1/30 the time of the whole frame)
-// ****
-uint16_t frameDevider = 30; //Change this to make the leds flash for a shorter devision of the frame
+// Set this to "true" if you're building a new zoetrope. The frame devider is a very course way of dealing with the LED on time, but can be very useful for ballparking the final on time. After ballparking, we recommend switching over to manual control of the 'StepsToFlash' variable. 
+// NOTE: To find the StepsToFlash value for a paticular framedevider, switch to DEBUG mode (setting below) and use the serially printed value for the 'StepsToFlash' var.
+boolean Use_Frame_Devider = true;
+
+// Defines what fraction of the frame should the LED be on for (Default 30 or 1/30 the time of the whole frame)
+uint16_t frameDevider = 3; //Change this to make the leds flash for a shorter devision of the frame
+
+// Defines how many steps should the LED be on for beginning at the start of the animation frame. Use this variable for finer control once you've ballparked the value using both the frameDevider variable and the DEBUG mode output.
+uint16_t StepsToFlash; 
+
+// DEBUG FUNCTION VARIABLES
+
+boolean DEBUG_On = true;
+
+unsigned long millis_Of_Last_Debug = 0;
+
+unsigned long millis_Debug_Delay = 5000;
+
 
 #endif

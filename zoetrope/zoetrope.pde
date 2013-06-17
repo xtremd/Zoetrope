@@ -2,7 +2,6 @@
 #include <TimerOne.h> //You will need the timer1 library found here: http://www.arduino.cc/playground/Code/Timer1
 
 //****INTERNAL VARS DO NOT TOUCH!*****
-uint16_t StepsToFlash; 
 
 boolean ledHold = true; //When the machine is starting up, hold the leds on until the table is up to speed
 
@@ -30,18 +29,10 @@ uint8_t stepDevider = 1; //This is a phase tracker. It tracks the current phase 
 
 uint16_t steps_Per_Rotation = motorStepsPerRotation * microsteppingDevider;
 
-// DEBUG FUNCTION VARIABLES
-
-boolean DEBUG_On = true;
-
-unsigned long millis_Of_Last_Debug = 0;
-
-unsigned long millis_Debug_Delay = 5000;
-
 
 void setup() {
-	
-	Serial.begin(9600);
+
+  Serial.begin(9600);
 
   // Start at a low RPM, so that the motor can supply enough torque to get the wheel spinning.
   current_delay_us = convertRPMToUS(5);
@@ -49,21 +40,15 @@ void setup() {
   // Eventually, we want to hook this to a pot or something, but for now set a fixed speed.
   target_delay_us = convertRPMToUS(targetRPM);
 
-  Serial.println(target_delay_us);
-
-  // Calculate steps per frame. Is only a local var.
-  float stepsPerFrame;
-  stepsPerFrame = ((float)steps_Per_Rotation/frameCount);
-
-  // Calculate how long the LED has to be on.
-  StepsToFlash = floor( (stepsPerFrame/frameDevider) + 0.5 );
+  // Calculate how long the LEDs must stay on.
+  calculateStepsPerFrame();
 
   // Setup the pin states. (Input, Output, etc)
   setupOutputPins();
 
   // Set pins high/low etc.
   setupInitialPinStates();
-  
+
   // Print debugging information
   printDEBUG();
 
@@ -76,6 +61,18 @@ void loop() {
   printDEBUG();
   // Wait a second!
   delay(5);
+}
+
+// Calculates how long should the LEDs be on per frame. Honors the 'use_Frame_Devider' variable to decide when to calulate the value from the 'frameDevider,' and when to use the user defined variable.
+void calculateStepsPerFrame() {
+  if (Use_Frame_Devider == true) {
+    // Calculate steps per frame. Is only a local var.
+    float stepsPerFrame;
+    stepsPerFrame = ((float)steps_Per_Rotation/(float)frameCount);
+
+    // Calculate how long the LED has to be on. (Round up)
+    StepsToFlash = floor( ((float)stepsPerFrame/(float)frameDevider) + 1 );
+  }
 }
 
 void stepCallback() {
@@ -93,7 +90,7 @@ void stepCallback() {
 
     if (activeStepCount < StepsToFlash) { //if the flash still has not ended
       flashLED(1); //keep it up!
-	   activeStepCount++;
+      activeStepCount++;
     } 
     else { // If the flash has ended, turn off the flash
       flashLED(0); 
@@ -101,7 +98,7 @@ void stepCallback() {
   }
 
   incrementCurrentPosition();
-  
+
   // Do the actual stepping of the stepper motor.
 #if STEPPER_CARD == 1
   //Do card step
@@ -110,7 +107,7 @@ void stepCallback() {
   //Do hbridge step
   doHBridgeStep();
 #endif
-  
+
 }
 
 // Flashes LED while also honoring the LED spinup hold.
@@ -150,13 +147,13 @@ uint16_t frameStart(uint8_t frameNumber) {
 
   // Do calculations
   unroundedPosition = (steps_Per_Rotation * frameNumber) / frameCount;
-  
+
   // Do rounding
   startPosition = floor(unroundedPosition+0.5);
-  
+
   // Check for overflow. If the start of the frame is marginally more than the max length of a full rotation, snap the position to zero.
   if (startPosition >= steps_Per_Rotation ) {
-	  startPosition = 0;
+    startPosition = 0;
   }
   return startPosition;
 }
@@ -337,54 +334,55 @@ long convertRPMToUS(float RPM) {
 
 // Manually prints all the values of all the global variables
 void printDEBUG() {
-	
-	// Check if Debug mode is enabled.
-		if (DEBUG_On == true) {
-	
-			unsigned long current_Millis = millis();
-	
-			// If the current time is longer than the debug delay, trigger the debug function
-			if (current_Millis >= (millis_Of_Last_Debug + millis_Debug_Delay) ) {
-		
-				// Set millis_Of_Last_Debug to current time
-				millis_Of_Last_Debug = current_Millis;
-	
-				Serial.print("StepsToFlash: ");
-				Serial.println(StepsToFlash); 
-	
-				Serial.print("Led Hold: ");
-				Serial.println(ledHold);
-	
-				Serial.print("Target Delay: ");
-				Serial.println(target_delay_us);
-	
-				Serial.print("Current Delay: ");
-				Serial.println(current_delay_us);
 
-				Serial.print("Acceleration timing: ");
-				Serial.println(acceleration_us);
+  // Check if Debug mode is enabled.
+  if (DEBUG_On == true) {
 
-				Serial.print("Current Pos: ");
-				Serial.println(current_Position);
-	
-				Serial.print("current_Frame_Index: ");
-				Serial.println(current_Frame_Index);
-				
-				Serial.print("Next Frame Start: ");
-				Serial.println(frameStart(current_Frame_Index));
-	
-				Serial.print("activeStepCount: ");
-				Serial.println(activeStepCount);
-	
-				Serial.print("stepDevider: ");
-				Serial.println(stepDevider);
-	
-				Serial.print("steps_Per_Rotation: ");
-				Serial.println(steps_Per_Rotation);
-				
-				Serial.println();
-	
-		}
-	}
-	
+    unsigned long current_Millis = millis();
+
+    // If the current time is longer than the debug delay, trigger the debug function
+    if (current_Millis >= (millis_Of_Last_Debug + millis_Debug_Delay) ) {
+
+      // Set millis_Of_Last_Debug to current time
+      millis_Of_Last_Debug = current_Millis;
+
+      Serial.print("StepsToFlash: ");
+      Serial.println(StepsToFlash); 
+
+      Serial.print("Led Hold: ");
+      Serial.println(ledHold);
+
+      Serial.print("Target Delay: ");
+      Serial.println(target_delay_us);
+
+      Serial.print("Current Delay: ");
+      Serial.println(current_delay_us);
+
+      Serial.print("Acceleration timing: ");
+      Serial.println(acceleration_us);
+
+      Serial.print("Current Pos: ");
+      Serial.println(current_Position);
+
+      Serial.print("current_Frame_Index: ");
+      Serial.println(current_Frame_Index);
+
+      Serial.print("Next Frame Start: ");
+      Serial.println(frameStart(current_Frame_Index));
+
+      Serial.print("activeStepCount: ");
+      Serial.println(activeStepCount);
+
+      Serial.print("stepDevider: ");
+      Serial.println(stepDevider);
+
+      Serial.print("steps_Per_Rotation: ");
+      Serial.println(steps_Per_Rotation);
+
+      Serial.println();
+
+    }
+  }
+
 }
+

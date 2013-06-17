@@ -16,6 +16,8 @@ void stepCallback();
 // Flashes LED while also honoring the LED spinup hold.
 void flashLED(uint8_t pinstate = 1);
 
+void calculateStepsPerFrame();
+
 // Increments the frame index and prevents overflow
 void incrementFrameIndex();
 
